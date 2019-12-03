@@ -129,6 +129,7 @@ app.post('/api/admin/delete', (req, res) => {
 //films
 const queryFilms = (req, res, { hasCount = false, params = {}, limit = 12, skip = 0, sort = { time: -1 } } = {}) => {
   const p1 = new Promise((resolve, reject) => {
+    console.log(params);
     Films.find(params).sort(sort).limit(limit).skip(skip).toArray((err, films) => {
       if (err) reject(err)
       resolve(films)
@@ -207,5 +208,41 @@ app.get('/api/recommand', (req, res) => {
     if (err) return res.status(500).end(err);
     return res.end(JSON.stringify(films));
   })
+});
+
+
+// cinemas
+const queryCinemas = (req, res, { hasCount = false, params = {}, limit = 12, skip = 0 } = {}) => {
+  const p1 = new Promise((resolve, reject) => {
+    console.log(params);
+    Cinemas.find(params).limit(limit).skip(skip).toArray((err, cinemas) => {
+      if (err) reject(err)
+      resolve(cinemas)
+    })
+  });
+
+  const p2 = new Promise((resolve, reject) => {
+    Cinemas.count(params, (err, count) => {
+      if (err) reject(err)
+      resolve(count)
+    })
+  });
+  if (!hasCount) {
+    p1.then((value) => {
+      res.end(JSON.stringify(value));
+    }).catch(err => {
+      res.status(500).end(err);
+    });
+    return;
+  }
+  Promise.all([p1,p2]).then((value) => {
+    res.end(JSON.stringify({ data: value[0], count: value[1] }));
+  }).catch((err) => {
+    res.status(500).end(err);
+  })
+}
+app.get('/api/cinemas/query', (req, res) => {
+  let { params, pageNo = 1, pageSize = 30 } = req.query;
+  queryCinemas(req, res, { params: JSON.parse(params), hasCount: true, limit: parseInt(pageSize), skip: (pageNo - 1) * pageSize });
 });
 app.listen(8001);
