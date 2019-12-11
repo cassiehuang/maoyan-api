@@ -80,7 +80,7 @@ app.post('/api/logout', (req, res) => {
 const salt1 = 'xyz';
 const salt2 = 'abc';
 app.post('/api/login/*', (req, res) => {
-  let args = req.body.data;
+  let args = req.body;
   if (args.username && args.password) {
     args.password = crypto
       .createHash('md5')
@@ -94,8 +94,8 @@ app.post('/api/login/*', (req, res) => {
   Admin.findOne(args, (err, people) => {
     if (err) return res.status(500).end(err);
     if (!people) return res.status(403).end(JSON.stringify({ code: -1, message: 'not matched' }));
-    req.session.user = data.data[0];
-    res.end(JSON.stringify({ username: data.data[0].username }));
+    req.session.user = people;
+    res.end(JSON.stringify({ username: people.username }));
   })
 });
 
@@ -129,7 +129,6 @@ app.post('/api/admin/delete', (req, res) => {
 //films
 const queryFilms = (req, res, { hasCount = false, params = {}, limit = 12, skip = 0, sort = { time: -1 } } = {}) => {
   const p1 = new Promise((resolve, reject) => {
-    console.log(params);
     Films.find(params).sort(sort).limit(limit).skip(skip).toArray((err, films) => {
       if (err) reject(err)
       resolve(films)
@@ -214,7 +213,6 @@ app.get('/api/recommand', (req, res) => {
 // cinemas
 const queryCinemas = (req, res, { hasCount = false, params = {}, limit = 12, skip = 0 } = {}) => {
   const p1 = new Promise((resolve, reject) => {
-    console.log(params);
     Cinemas.find(params).limit(limit).skip(skip).toArray((err, cinemas) => {
       if (err) reject(err)
       resolve(cinemas)
@@ -245,4 +243,27 @@ app.get('/api/cinemas/query', (req, res) => {
   let { params, pageNo = 1, pageSize = 30 } = req.query;
   queryCinemas(req, res, { params: JSON.parse(params), hasCount: true, limit: parseInt(pageSize), skip: (pageNo - 1) * pageSize });
 });
+
+// search
+app.get('/api/search', (req, res) => {
+  let { keyword } = req.query;
+  const p1 = new Promise((resolve, reject) => {
+    Films.find({"title": { $regex: keyword }}, (err, films) => {
+      if (err) reject(err)
+      resolve(films.slice(0, 20));
+    });
+  })
+  const p2 = new Promise((resolve, reject) => {
+    Cinemas.find({"name": { $regex: keyword }}, (err, cinemas) => {
+      if (err) reject(err)
+      resolve(cinemas.slice(0, 20));
+    });
+  })
+  Promise.all([p1, p2]).then((result) => {
+    res.end(JSON.stringify({films: result[0], cinemas: result[1], people: []}));
+  })
+  .catch((err) => {
+    res.status(500).end(err);
+  })
+})
 app.listen(8001);
