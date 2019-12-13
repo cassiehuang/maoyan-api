@@ -9,6 +9,23 @@
       "exec_mode":"cluster",
       "log_date_format":"YYYY-MM-DD HH:mm Z",
       "out_file":"log/node-app.stdout.log"
+    },
+    {
+      "name":"manyan",
+      "cwd": "../maoyan",
+      "script":"server.js",
+      "watch":true,
+      "ignore-watch":"node_modules",
+      "instances":"3",
+      "exec_mode":"cluster",
+      "log_date_format":"YYYY-MM-DD HH:mm Z",
+      "out_file":"log/node-app.stdout.log",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "env_production": {
+        "NODE_ENV": "production"
+      }
     }
   ]
 }
