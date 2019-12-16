@@ -5,8 +5,7 @@
       "script":"server.js",
       "watch":true,
       "ignore-watch":"node_modules",
-      "instances":"3",
-      "exec_mode":"cluster",
+      "exec_mode":"fork",
       "log_date_format":"YYYY-MM-DD HH:mm Z",
       "out_file":"log/node-app.stdout.log"
     },
@@ -16,8 +15,7 @@
       "script":"server.js",
       "watch":true,
       "ignore-watch":"node_modules",
-      "instances":"3",
-      "exec_mode":"cluster",
+      "exec_mode":"fork",
       "log_date_format":"YYYY-MM-DD HH:mm Z",
       "out_file":"log/node-app.stdout.log",
       "env": {
